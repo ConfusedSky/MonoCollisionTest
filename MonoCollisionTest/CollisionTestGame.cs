@@ -72,6 +72,10 @@ namespace MonoCollisionTest
             if (GamePad.GetState(PlayerIndex.One).Buttons.Back == ButtonState.Pressed || Keyboard.GetState().IsKeyDown(Keys.Escape))
                 Exit();
 #endif
+            // Get input
+            KeyboardState state = Keyboard.GetState();
+            player.HandleInput(state);
+
             // TODO: Add your update logic here
             player.Update(gameTime);
             Global.Camera.CenterOn(player.Position);
@@ -88,16 +92,20 @@ namespace MonoCollisionTest
 
             spriteBatch.Begin(transformMatrix:Global.Camera.TranslationMatrix);
             spriteBatch.Draw(testSprite, new Vector2(), Color.Black);
+            DrawBorders(spriteBatch);
+            player.Render(spriteBatch);
+            spriteBatch.End();
+
+            base.Draw(gameTime);
+        }
+
+        private void DrawBorders(SpriteBatch spriteBatch)
+        {
             // Draw World Borders
             spriteBatch.Draw(TopBorder, new Vector2(0, 0), Color.Black);
             spriteBatch.Draw(BottomBorder, new Vector2(0, Global.MapHeight-Global.BorderWidth), Color.Black);
             spriteBatch.Draw(LeftBorder, new Vector2(0, 0), Color.Black);
             spriteBatch.Draw(RightBorder, new Vector2(Global.MapWidth-Global.BorderWidth, 0), Color.Black);
-            player.Render(spriteBatch);
-            spriteBatch.End();
-
-            //TODO: Add your drawing code here
-            base.Draw(gameTime);
         }
     }
 }

@@ -67,7 +67,7 @@ namespace MonoCollisionTest
         }
 
         KeyboardState prevState;
-        private void HandleInput(KeyboardState state)
+        public void HandleInput(KeyboardState state)
         {
             if(state.IsKeyDown(Keys.A))
             {
@@ -94,6 +94,8 @@ namespace MonoCollisionTest
                     hasDoubleJump = false;
                 }
             }
+
+            prevState = state;
         }
 
         private void GlobalBoundsChecking()
@@ -131,20 +133,13 @@ namespace MonoCollisionTest
         public void Update(GameTime time)
         {
             float deltaTime = (float)time.ElapsedGameTime.TotalSeconds;
-
-            // Get input
-            KeyboardState state = Keyboard.GetState();
-            HandleInput(state);
-
             // Do gravities
-            velocity.Y += 1200 * deltaTime;
+            velocity.Y += Global.Gravity * deltaTime;
 
             // Setting velocity
             position += velocity * deltaTime; 
 
             GlobalBoundsChecking();
-
-            prevState = state;
         }        
 
         public void Render(SpriteBatch s)
