@@ -3,13 +3,15 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 
+using System.Collections.Generic;
+
 namespace MonoCollisionTest
 {
     public class Dot
     {
-        public static Texture2D createCircleText(Game game, int diameter, Color color)
+        public static Texture2D createCircleText(GraphicsDevice graphics, int diameter, Color color)
         {
-            Texture2D texture = new Texture2D(game.GraphicsDevice, diameter, diameter);
+            Texture2D texture = new Texture2D(graphics, diameter, diameter);
             Color[] colorData = new Color[diameter*diameter];
         
             float diam = diameter / 2f;
@@ -47,12 +49,13 @@ namespace MonoCollisionTest
         private float doubleJumpHeight;
         private bool grounded;
         private bool hasDoubleJump;
+        private IList<RectCollisionSurface> platforms;
 
         public Vector2 Position { get {return position;} }
 
         public Dot(CollisionTestGame game, int diameter, Color color)
         {
-            texture = createCircleText(game, diameter, color);
+            texture = createCircleText(Global.Graphics, diameter, color);
             position = new Vector2();
             velocity = new Vector2();
             this.diameter = diameter;
@@ -62,6 +65,7 @@ namespace MonoCollisionTest
             this.doubleJumpHeight = .7667f * 450;
             this.grounded = false;
             this.hasDoubleJump = false;
+            this.platforms = game.platforms;
 
             prevState = Keyboard.GetState(); 
         }
@@ -132,14 +136,54 @@ namespace MonoCollisionTest
 
         public void Update(GameTime time)
         {
+            Rectangle r = new Rectangle();
+            r.Height = diameter;
+            r.Width = diameter;
+
             float deltaTime = (float)time.ElapsedGameTime.TotalSeconds;
             // Do gravities
             velocity.Y += Global.Gravity * deltaTime;
 
             // Setting velocity
-            position += velocity * deltaTime; 
+            position.X += velocity.X * deltaTime; 
+//
+//            r.X = (int)position.X;
+//            r.Y = (int)position.Y;
+//
+//            foreach(RectCollisionSurface rc in platforms)
+//            {
+//                if(rc.IsCollided(r))
+//                {
+//                    position.X -= velocity.X * deltaTime;
+//                }
+//            }
+//
+            position.Y += velocity.Y * deltaTime; 
+//
+//            r.X = (int)position.X;
+//            r.Y = (int)position.Y;
+//
+//            foreach(RectCollisionSurface rc in platforms)
+//            {
+//                if(rc.IsCollided(r))
+//                {
+//                    position.Y += velocity.Y * deltaTime; 
+//                    velocity.Y = 0;
+//                    grounded = true;
+//                    if(r.Y <= rc.Y)
+//                    {
+//                        hasDoubleJump = true;
+//                    }
+//                    
+//                }
+//            }
 
             GlobalBoundsChecking();
+
+//            if(velocity.Y != 0)
+//            {
+//                grounded = false;
+//            }
         }        
 
         public void Render(SpriteBatch s)

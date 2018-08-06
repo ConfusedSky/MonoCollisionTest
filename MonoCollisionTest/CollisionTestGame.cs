@@ -4,6 +4,8 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 
+using System.Collections.Generic;
+
 namespace MonoCollisionTest
 {
     /// <summary>
@@ -18,6 +20,7 @@ namespace MonoCollisionTest
         Texture2D BottomBorder;
         Texture2D LeftBorder;
         Texture2D RightBorder;
+        public IList<RectCollisionSurface> platforms;        
 
         public CollisionTestGame()
         {
@@ -34,18 +37,31 @@ namespace MonoCollisionTest
         protected override void Initialize()
         {
             // TODO: Add your initialization logic here
+            Global.Graphics = GraphicsDevice;
+
+            graphics.PreferredBackBufferWidth = Global.MapWidth/2;
+            graphics.PreferredBackBufferHeight = Global.MapHeight/2;
+            graphics.ApplyChanges();
             Global.Camera.ViewportWidth = graphics.GraphicsDevice.Viewport.Width;
             Global.Camera.ViewportHeight = graphics.GraphicsDevice.Viewport.Height;
+            
+//          register_rect_collision_surface( "Rect1", ol, rl, cl, SCREEN_WIDTH/2, SCREEN_HEIGHT/2, 300, 20, 
+//                                  SDL_MapRGB( screen->format, 0x00, 0x00, 0xFF ), true, false );
+//          register_rect_collision_surface( "Rect2", ol, rl, cl, SCREEN_WIDTH/2 - 200, SCREEN_HEIGHT/2 + 120, 300, 20, 
+//                                  SDL_MapRGB( screen->format, 0xFF, 0x00, 0x00 ), true );
+//          register_rect_collision_surface( "Rect3", ol, rl, cl, SCREEN_WIDTH/2 - 200, SCREEN_HEIGHT/2 - 120, 300, 20, 
+//                                  SDL_MapRGB( screen->format, 0xFF, 0x00, 0xFF ), false, false );
+            platforms = new List<RectCollisionSurface>();
+            platforms.Add(new RectCollisionSurface(Global.MapWidth/4, Global.MapHeight/4, 300, 20, new Color(0, 0, 0xFF), true, false)); 
+            platforms.Add(new RectCollisionSurface(Global.MapWidth/4 - 200, Global.MapHeight/4 + 120, 300, 20, new Color(0xFF, 0, 0), true));
+            platforms.Add(new RectCollisionSurface(Global.MapWidth/4 - 200, Global.MapHeight/4 - 120, 300, 20, new Color(0xFF, 0x00, 0xFF), false, false));
             player = new Dot(this, 20, Color.Black);
-
-            testSprite = Global.CreateTexture(GraphicsDevice, 50, 50, pixel => Color.Black);
+            
             TopBorder = BottomBorder = Global.CreateTexture(GraphicsDevice, Global.MapWidth, Global.BorderWidth, pixel => Color.Black);
             LeftBorder = RightBorder = Global.CreateTexture(GraphicsDevice, Global.BorderWidth, Global.MapHeight, pixel => Color.Black);
 
             base.Initialize();
         }
-
-        Texture2D testSprite;
 
         /// <summary>
         /// LoadContent will be called once per game and is the place to load
@@ -88,12 +104,17 @@ namespace MonoCollisionTest
         /// <param name="gameTime">Provides a snapshot of timing values.</param>
         protected override void Draw(GameTime gameTime)
         {
-            graphics.GraphicsDevice.Clear(Color.CornflowerBlue);
+            graphics.GraphicsDevice.Clear(Color.White);
 
             spriteBatch.Begin(transformMatrix:Global.Camera.TranslationMatrix);
-            spriteBatch.Draw(testSprite, new Vector2(), Color.Black);
             DrawBorders(spriteBatch);
             player.Render(spriteBatch);
+
+            foreach(RectCollisionSurface rc in platforms)
+            {
+                rc.Render(spriteBatch);
+            }
+
             spriteBatch.End();
 
             base.Draw(gameTime);
