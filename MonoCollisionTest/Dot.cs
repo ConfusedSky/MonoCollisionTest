@@ -38,6 +38,11 @@ namespace MonoCollisionTest
             return texture;
         }
 
+        public const int DEFAULT_JUMP_HEIGHT = 450;
+        public const float DEFAULT_DOUBLE_JUMP_MULTIPLIER = .7667f;
+        public const float DEFAULT_POWER_JUMP_MULTIPLIER = 2.6f;
+        public const float TO_POWER_JUMP = 0;
+
         private Texture2D texture;
         private Vector2 position;
         private Vector2 velocity;
@@ -47,8 +52,10 @@ namespace MonoCollisionTest
         private float speed;
         private float jumpHeight;
         private float doubleJumpHeight;
+        private float powerJumpHeight;
         private bool grounded;
         private bool hasDoubleJump;
+        private float powerJump;
         private IList<RectCollisionSurface> platforms;
 
         public Vector2 Position { get {return position;} }
@@ -61,11 +68,13 @@ namespace MonoCollisionTest
             this.diameter = diameter;
             this.color = color;
             this.speed = 200;
-            this.jumpHeight = 450;
-            this.doubleJumpHeight = .7667f * 450;
+            this.jumpHeight = DEFAULT_JUMP_HEIGHT;
+            this.doubleJumpHeight = DEFAULT_DOUBLE_JUMP_MULTIPLIER * this.jumpHeight;
+            this.powerJumpHeight = DEFAULT_POWER_JUMP_MULTIPLIER * this.jumpHeight;
             this.grounded = false;
             this.hasDoubleJump = false;
             this.platforms = game.platforms;
+            this.powerJump = TO_POWER_JUMP;
 
             prevState = Keyboard.GetState(); 
         }
@@ -90,7 +99,16 @@ namespace MonoCollisionTest
             {
                 if(grounded)
                 { 
-                    velocity.Y = -jumpHeight;
+                    if((state.IsKeyDown(Keys.LeftControl) || 
+                        state.IsKeyDown(Keys.RightControl)) &&
+                        powerJump >= TO_POWER_JUMP )
+                    {
+                        velocity.Y = -powerJumpHeight;
+                    }
+                    else
+                    {
+                        velocity.Y = -jumpHeight;
+                    }
                 }
                 else if(hasDoubleJump && velocity.Y >= -.5*doubleJumpHeight)
                 {
@@ -128,10 +146,6 @@ namespace MonoCollisionTest
                 grounded = true;
                 hasDoubleJump = true;
             }
-            else
-            {
-                grounded = false;                
-            }
         }
 
         public void Update(GameTime time)
@@ -141,49 +155,55 @@ namespace MonoCollisionTest
             r.Width = diameter;
 
             float deltaTime = (float)time.ElapsedGameTime.TotalSeconds;
+
+            if(powerJump < TO_POWER_JUMP)
+            {
+                powerJump += deltaTime;
+            }
+
             // Do gravities
             velocity.Y += Global.Gravity * deltaTime;
 
             // Setting velocity
             position.X += velocity.X * deltaTime; 
-//
-//            r.X = (int)position.X;
-//            r.Y = (int)position.Y;
-//
-//            foreach(RectCollisionSurface rc in platforms)
-//            {
-//                if(rc.IsCollided(r))
-//                {
-//                    position.X -= velocity.X * deltaTime;
-//                }
-//            }
-//
+
+            r.X = (int)position.X;
+            r.Y = (int)position.Y;
+
+            foreach(RectCollisionSurface rc in platforms)
+            {
+                if(rc.IsCollided(r))
+                {
+                    position.X -= velocity.X * deltaTime;
+                }
+            }
+
             position.Y += velocity.Y * deltaTime; 
-//
-//            r.X = (int)position.X;
-//            r.Y = (int)position.Y;
-//
-//            foreach(RectCollisionSurface rc in platforms)
-//            {
-//                if(rc.IsCollided(r))
-//                {
-//                    position.Y += velocity.Y * deltaTime; 
-//                    velocity.Y = 0;
-//                    grounded = true;
-//                    if(r.Y <= rc.Y)
-//                    {
-//                        hasDoubleJump = true;
-//                    }
-//                    
-//                }
-//            }
+
+            r.X = (int)position.X;
+            r.Y = (int)position.Y;
+
+            foreach(RectCollisionSurface rc in platforms)
+            {
+                if(rc.IsCollided(r))
+                {
+                    position.Y -= velocity.Y * deltaTime; 
+                    velocity.Y = 0;
+                    grounded = true;
+                    if(r.Y <= rc.Y)
+                    {
+                        hasDoubleJump = true;
+                    }
+                    
+                }
+            }
 
             GlobalBoundsChecking();
 
-//            if(velocity.Y != 0)
-//            {
-//                grounded = false;
-//            }
+            if(velocity.Y != 0)
+            {
+                grounded = false;
+            }
         }        
 
         public void Render(SpriteBatch s)

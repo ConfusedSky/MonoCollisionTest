@@ -84,7 +84,7 @@ namespace MonoCollisionTest
                 return false;
             }
 
-            if(leftA <= rightB)
+            if(leftA >= rightB)
             {
                 return false;
             }
